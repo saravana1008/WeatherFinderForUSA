@@ -21,13 +21,22 @@ class APIHandler: NSObject {
         return baseUrl + locationFinderUrl + "?q=\(LocString)" + "&appid=\(apiKey)"
     }
     
+    func getLocationZipcodeUrl(LocString: String) -> String {
+        return baseUrl + locationFinderUrl + "?zip=\(LocString)" + "&appid=\(apiKey)"
+    }
+    
     func getweatherReportUrl(lat: String, long: String) -> String {
         return baseUrl + locationFinderUrl + "?lat=\(lat)&lon=\(long)" + "&appid=\(apiKey)"
-//    http://api.openweathermap.org/geo/1.0/reverse?lat=51.5098&lon=-0.1180&limit=5&appid={API key}
     }
     
     func getWeatherReport(locStr: String, completionHandler: @escaping ((WeatherDetail?, String?) -> Void)) {
-        let destUrl = getLocationUrl(LocString: locStr)
+        var destUrl = getLocationUrl(LocString: locStr)
+        if locStr.lowercased().contains(",us") || locStr.lowercased().contains(", us") {
+            var sepertedStr = locStr.lowercased().components(separatedBy: locStr.lowercased().contains(",us") ? ",us" : ", us")[0]
+            if Int(sepertedStr) != nil {
+                destUrl = getLocationZipcodeUrl(LocString: "\(sepertedStr),US")
+            }
+        }
         guard let validUrl = URL(string: destUrl) else {
             completionHandler(nil, "Invalid Url")
             return
